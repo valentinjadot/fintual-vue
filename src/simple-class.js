@@ -61,7 +61,7 @@ export class Portfolio {
   getLast13QuoteDatesFormatted () {
     return this.getLast13QuoteDates().map(priceDate => {
       let jsDateObject = new Date(priceDate)
-      let year = jsDateObject.getFullYear()
+      let year = '\''+jsDateObject.getFullYear().toString().substr(-2) // We get 2019 and transform it to '19
       let month = jsDateObject.toLocaleString('en-us', { month: 'short' })
       return month + ' ' + year
     })
@@ -87,16 +87,19 @@ export class Portfolio {
 
     // The first line is the header. It contains the labels of the data.
     // The first collumn will be the list of dates (formatted as i.e. "May, 2019") thus the header is:
-    let lineHeader = ['Months']
+    let lineHeader = [{type: 'string', role: 'domain', label: 'Months'}]
 
     // The remaining collumn headers will be the name of each Company's stock
     this.stocksOfPortfolio.forEach(stock => lineHeader.push(stock.name))
+
+    // We add a special collumn to configure the tooltip (that appears whe we hover the graph)
 
     // We add this first completed line to the table
     tableForChart.push(lineHeader)
 
     // For the remainng lines of the table, we will loop through each of the last 13 quote dates and add the corresponding stocks value
     for (let i = a; i <= b; i++) {
+
       let dateOfQuote = this.getLast13QuoteDatesFormatted()[i]
       // The first collumn of this line is the date itself
       let line = [dateOfQuote]
@@ -104,6 +107,7 @@ export class Portfolio {
       this.stocksOfPortfolio.forEach(stock => {
         line.push(parseInt(stock.getTotalValueAt(this.getLast13QuoteDates()[i])))
       })
+
 
       // We insert the line in the final data table
       tableForChart.push(line)

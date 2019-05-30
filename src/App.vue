@@ -9,25 +9,51 @@
     </v-toolbar>
 
     <v-content>
-      <div>
-        <h1>Your portfolio beteween {{ last13QuoteDatesFormatted[range[0]] }} and {{ last13QuoteDatesFormatted[range[1]] }}</h1>
+      <v-container class="container" grid-list-xl>
+        <h1
+          :class="{
+            'display-3': $vuetify.breakpoint.xl,
+            'display-2': $vuetify.breakpoint.lg,
+            'display-1': $vuetify.breakpoint.md,
+            'headline': $vuetify.breakpoint.sm,
+            'title': $vuetify.breakpoint.xs,
+            }"
+        >Your portfolio beteween {{ last13QuoteDatesFormatted[range[0]] }} and {{ last13QuoteDatesFormatted[range[1]] }}</h1>
+        <v-layout justify-space-between fill-height :class="{
+          'row': this.$vuetify.breakpoint.mdAndUp,
+          'column':!this.$vuetify.breakpoint.mdAndUp
+        }">
+          
+          <v-flex md4>
+            <v-card class="pa-2">
+              <v-card-text>
+                <v-layout :class="{
+          'row': !this.$vuetify.breakpoint.mdAndUp,
+          'column':this.$vuetify.breakpoint.mdAndUp
+        }">
+                  <v-flex>
+                    <figcaption class="title text-uppercase">Profit</figcaption>
+                    <p class="display-2 my-2">$ {{ profit.toFixed() }}</p>
+                  </v-flex>
 
-        <h3>Current value of portfolio at {{ last13QuoteDatesFormatted[12] }} </h3>
-        <h2>{{ currentValueOfPortfolio }}</h2>
+                  <v-flex>
+                    <figcaption class="title text-uppercase">Annualized return</figcaption>
+                    <p class="display-2 my-2">{{ (annualizedReturn*100).toFixed() }} %</p>
+                  </v-flex>
+                </v-layout>
+              </v-card-text>
+            </v-card>
+          </v-flex>
 
+          <v-flex md8>
+            <v-card>
+              <compo-chart :data="dataTableForChart"></compo-chart>
+            </v-card>
+          </v-flex>
 
-        <h3>Profit</h3>
-        <h2>$ {{ profit.toFixed() }} USD</h2>
-        <br>
-
-        <h3>Annualized return</h3>
-        <h2>{{ (annualizedReturn*100).toFixed() }} %</h2>
-        <br>
-
-        <compo-chart :data="dataTableForChart"></compo-chart>
-
+        </v-layout>
         <v-layout>
-          <v-flex pa-5>
+          <v-flex class="slider">
             <v-range-slider
               :tick-labels="last13QuoteDatesFormatted"
               always-dirty
@@ -36,6 +62,7 @@
               thumb-label
               thumb-size="64"
               ticks="always"
+              tick-size="2"
               v-model="range"
             >
               <template v-slot:thumb-label="props">
@@ -44,9 +71,7 @@
             </v-range-slider>
           </v-flex>
         </v-layout>
-
-
-      </div>
+      </v-container>
     </v-content>
   </v-app>
 </template>
@@ -88,7 +113,7 @@ export default {
       );
     },
     currentValueOfPortfolio() {
-      return this.portfolio.getValueOfPortfolioAt(this.last13QuoteDates[12])
+      return this.portfolio.getValueOfPortfolioAt(this.last13QuoteDates[12]);
     },
     last13QuoteDates() {
       return this.portfolio.getLast13QuoteDates();
@@ -102,3 +127,14 @@ export default {
   }
 };
 </script>
+
+
+<style>
+.slider * {
+  font-size: 15px;
+}
+
+.v-card {
+  height: 100%;
+}
+</style>

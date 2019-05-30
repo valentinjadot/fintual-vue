@@ -1248,7 +1248,7 @@
   {
      "name":"Microsoft",
      "symbol":"MSFT",
-     "amount":25,
+     "amount":100,
      "monthly-time-serie":{
         "2019-05-23":{
            "1. open":"130.5300",
