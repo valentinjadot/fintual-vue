@@ -20,7 +20,6 @@ import { GChart } from 'vue-google-charts'
     props:['data'],
     data: () => ({
       chartOptions:{
-          title: 'Total value of the portfolio through time',
           isStacked:true,
           hAxis: {
             title: 'Months',  
@@ -33,7 +32,7 @@ import { GChart } from 'vue-google-charts'
             },
           backgroundColor: { fill:'transparent' },
           width:'100%',
-          height:300,
+          height:350,
           animation: {
             duration:0
           },

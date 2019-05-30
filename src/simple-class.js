@@ -34,6 +34,12 @@ export class Portfolio {
       this.getValueOfPortfolioAt(dateT1) - this.getValueOfPortfolioAt(dateT0)
     )
   }
+  getProfitForStockX (dateT0, dateT1, stockSymbol) {
+    let focusedStock = this.stocksOfPortfolio.filter(stock => stock.symbol === stockSymbol)
+    return (
+      focusedStock[0].getTotalValueAt(dateT1) - focusedStock[0].getTotalValueAt(dateT0)
+    )
+  }
 
   // Bonus challenge : this method returns the annualized return of the portfolio between two dates
   getAnnualizedReturnBetween (dateT0, dateT1) {
@@ -54,14 +60,15 @@ export class Portfolio {
     // The formula of annualized return is (1 + cumulativeReturn) ^ (365 / daysHeld) - 1
     return (cumulativeReturn + 1) ** (365 / daysHeld) - 1
   }
-  getLast13QuoteDates () {
+
+  getArrayOfLast13QuoteDates () {
     // We get the closing dates from which we have the stock price in order to be able to compute 12 months of portfolio activity. We reverse the array in order to have a chronological order.
     return this.listOfDates.slice(0, 13).reverse()
   }
-  getLast13QuoteDatesFormatted () {
-    return this.getLast13QuoteDates().map(priceDate => {
+  getArrayOfLast13QuoteDatesFormatted () {
+    return this.getArrayOfLast13QuoteDates().map(priceDate => {
       let jsDateObject = new Date(priceDate)
-      let year = '\''+jsDateObject.getFullYear().toString().substr(-2) // We get 2019 and transform it to '19
+      let year = '\'' + jsDateObject.getFullYear().toString().substr(-2) // We get 2019 and transform it to '19
       let month = jsDateObject.toLocaleString('en-us', { month: 'short' })
       return month + ' ' + year
     })
@@ -87,7 +94,7 @@ export class Portfolio {
 
     // The first line is the header. It contains the labels of the data.
     // The first collumn will be the list of dates (formatted as i.e. "May, 2019") thus the header is:
-    let lineHeader = [{type: 'string', role: 'domain', label: 'Months'}]
+    let lineHeader = [{ type: 'string', role: 'domain', label: 'Months' }]
 
     // The remaining collumn headers will be the name of each Company's stock
     this.stocksOfPortfolio.forEach(stock => lineHeader.push(stock.name))
@@ -99,15 +106,13 @@ export class Portfolio {
 
     // For the remainng lines of the table, we will loop through each of the last 13 quote dates and add the corresponding stocks value
     for (let i = a; i <= b; i++) {
-
-      let dateOfQuote = this.getLast13QuoteDatesFormatted()[i]
+      let dateOfQuote = this.getArrayOfLast13QuoteDatesFormatted()[i]
       // The first collumn of this line is the date itself
       let line = [dateOfQuote]
       // Then we add a collumn for each of the 13 dates with the total value for this stock (price of 1 stock at that date multiplied by amount of stocks owned)
       this.stocksOfPortfolio.forEach(stock => {
-        line.push(parseInt(stock.getTotalValueAt(this.getLast13QuoteDates()[i])))
+        line.push(parseInt(stock.getTotalValueAt(this.getArrayOfLast13QuoteDates()[i])))
       })
-
 
       // We insert the line in the final data table
       tableForChart.push(line)
