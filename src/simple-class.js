@@ -14,7 +14,7 @@ export class Portfolio {
     })
 
     // For easy access, we reference the list of dates of the time-serie
-    this.listOfDates = Object.keys(this.stocksOfPortfolio[0].monthlyTimeSerie)
+    this.listOfDates = Object.keys(this.stocksOfPortfolio[0].monthlyTimeSerie) // VLC explain the 0 value
   }
 
   getValueOfPortfolioAt (date) {
@@ -37,7 +37,7 @@ export class Portfolio {
   getProfitForStockX (dateT0, dateT1, stockSymbol) {
     let focusedStock = this.stocksOfPortfolio.filter(stock => stock.symbol === stockSymbol)
     return (
-      focusedStock[0].getTotalValueAt(dateT1) - focusedStock[0].getTotalValueAt(dateT0)
+      focusedStock[0].getTotalValueAt(dateT1) - focusedStock[0].getTotalValueAt(dateT0) // VLC explain why 0 --> changer le nom pour "ForOneStock"
     )
   }
 
@@ -54,27 +54,48 @@ export class Portfolio {
 
     // Transforming a difference in timestamp in a difference of days
     var differenceInSeconds =
-      Math.abs(timestampDateT1 - timestampDateT0) / 1000
-    var daysHeld = Math.floor(differenceInSeconds / 86400)
+      Math.abs(timestampDateT1 - timestampDateT0) / 1000 // VLC remplacer 1000 par une variable global qui explique ce que c'est
+    var daysHeld = Math.floor(differenceInSeconds / 86400) // VLC idem (86400)
 
     // The formula of annualized return is (1 + cumulativeReturn) ^ (365 / daysHeld) - 1
-    return (cumulativeReturn + 1) ** (365 / daysHeld) - 1
+    return (cumulativeReturn + 1) ** (365 / daysHeld) - 1 // VLC idem pour 365 + expliquer le pourquoi du +1 -1, sauf si c'est un fromule connu
   }
 
-  getArrayOfLast13QuoteDates () {
-    // We get the closing dates from which we have the stock price in order to be able to compute 12 months of portfolio activity. We reverse the array in order to have a chronological order.
-    return this.listOfDates.slice(0, 13).reverse()
-  }
-  getArrayOfLast13QuoteDatesFormatted () {
-    return this.getArrayOfLast13QuoteDates().map(priceDate => {
-      let jsDateObject = new Date(priceDate)
-      let year = '\'' + jsDateObject.getFullYear().toString().substr(-2) // We get 2019 and transform it to '19
-      let month = jsDateObject.toLocaleString('en-us', { month: 'short' })
-      return month + ' ' + year
+  getListOfDates(format) {
+
+    const NUMBER_OF_YEARS = 10 
+    const sliceEnd = NUMBER_OF_YEARS+1
+
+    let objectToReturn = {
+      formatYYYYMMDD:[],
+      formatYYYY:[],
+      formatYY:[]
+    }
+
+    // We get the closing dates from which we have the stock price in order to be able to compute 10 years of portfolio activity. 
+  
+    // We reverse the array in order to have a chronological order.
+
+    // Ex: 2018-12-29
+    objectToReturn.formatYYYYMMDD = this.listOfDates.filter(priceDate => priceDate.split('-')[1] === '12').slice(0, sliceEnd).reverse()
+
+    // Ex: 2018
+    objectToReturn.formatYYYY = objectToReturn.formatYYYYMMDD.map(priceDate => {
+      let yearUncorrected = priceDate.split('-')[0]
+      let yearCorrected = parseInt(yearUncorrected) + 1
+      return yearCorrected
     })
-  }
 
-  getDataTableForChart (a, b) {
+    // Ex: '18
+    objectToReturn.formatYY = objectToReturn.formatYYYY.map(year => '\'' + year.toString().substr(-2))
+
+    return objectToReturn
+
+    }
+  
+
+
+  getDataTableForChart (a, b) { // VLC changer les noms a et b pour que cela soit plus representatif
     // We create a table (array of arrays) that will be sent to Google Chart API to generate the graph
     let tableForChart = []
 
@@ -105,13 +126,14 @@ export class Portfolio {
     tableForChart.push(lineHeader)
 
     // For the remainng lines of the table, we will loop through each of the last 13 quote dates and add the corresponding stocks value
+    // VLC tu dis 13 alors qu'il y a 14 veleur, 12 mois, je suis perdu
     for (let i = a; i <= b; i++) {
-      let dateOfQuote = this.getArrayOfLast13QuoteDatesFormatted()[i]
+      let dateOfQuote = this.getListOfDates().formatYY[i]
       // The first collumn of this line is the date itself
       let line = [dateOfQuote]
       // Then we add a collumn for each of the 13 dates with the total value for this stock (price of 1 stock at that date multiplied by amount of stocks owned)
       this.stocksOfPortfolio.forEach(stock => {
-        line.push(parseInt(stock.getTotalValueAt(this.getArrayOfLast13QuoteDates()[i])))
+        line.push(parseInt(stock.getTotalValueAt(this.getListOfDates().formatYYYYMMDD[i])))
       })
 
       // We insert the line in the final data table

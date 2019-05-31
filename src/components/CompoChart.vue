@@ -7,7 +7,6 @@
     :options="chartOptions"
   />
 
-
 </div>
 </template>
 
@@ -15,37 +14,36 @@
 
 import { GChart } from 'vue-google-charts'
 
-
-  export default {
-    props:['data'],
-    data: () => ({
-      chartOptions:{
-          isStacked:true,
-          hAxis: {
-            title: 'Months',  
-            titleTextStyle: {
-              color: '#333'
-              }
-            },
-          vAxis: {
-            format: 'currency'
-            },
-          backgroundColor: { fill:'transparent' },
-          width:'100%',
-          height:350,
-          animation: {
-            duration:0
-          },
-          focusTarget: 'category', 
-          tooltip: {isHtml: true}
-
+export default {
+  props: ['data'],
+  data: () => ({
+    chartOptions: {
+      isStacked: true,
+      hAxis: {
+        title: 'Years',
+        titleTextStyle: {
+          color: '#333'
         }
-    }),
-    components: {
+      },
+      vAxis: {
+        format: 'currency'
+      },
+      backgroundColor: { fill: 'transparent' },
+      width: '100%',
+      height: 350,
+      animation: {
+        duration: 0
+      },
+      focusTarget: 'category',
+      tooltip: { isHtml: true }
+
+    }
+  }),
+  components: {
     GChart
   }
 
-  }
+}
 
 </script>
 

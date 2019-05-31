@@ -23,36 +23,36 @@
 </template>
 
 <script>
-import { Portfolio, Stock } from "./simple-class";
-import stocksData from "./data/stocks.json";
+import { Portfolio, Stock } from './simple-class'
+import stocksData from './data/stocks.json'
 
 export default {
-  name: "app",
-  data() {
-    return {};
+  name: 'app',
+  data () {
+    return {}
   },
   computed: {
-    portfolio() {
-      return new Portfolio(stocksData);
+    portfolio () {
+      return new Portfolio(stocksData)
     },
-    dateT0() {
-      return "2017-10-31";
+    dateT0 () {
+      return '2017-10-31'
     },
-    dateT1() {
-      return "2019-05-23";
+    dateT1 () {
+      return '2019-05-23'
     },
-    profit() {
-      return this.portfolio.getProfitBetween(this.dateT0, this.dateT1);
+    profit () {
+      return this.portfolio.getProfitBetween(this.dateT0, this.dateT1)
     },
-    annualizedReturn() {
+    annualizedReturn () {
       return this.portfolio.getAnnualizedReturnBetween(
         this.dateT0,
         this.dateT1
-      );
+      )
     }
   },
   components: {}
-};
+}
 </script>
 
 <style>

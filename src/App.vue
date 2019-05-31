@@ -1,22 +1,11 @@
 <template>
   <v-app>
-<!--     <v-toolbar app>
-      <v-toolbar-title class="headline text-uppercase">
-        <span>Fintual</span>
-        <span class="font-weight-light">Challenge</span>
-      </v-toolbar-title>
+    <v-toolbar class="elevation-0 primary" dark>
+      <v-toolbar-side-icon></v-toolbar-side-icon>
+      <v-toolbar-title>Fintual Challenge</v-toolbar-title>
       <v-spacer></v-spacer>
-
-    </v-toolbar> -->
-
-      <v-toolbar class="elevation-0 primary" dark>
-    <v-toolbar-side-icon></v-toolbar-side-icon>
-    <v-toolbar-title>Fintual Challenge</v-toolbar-title>
-    <v-spacer></v-spacer>
-    <v-toolbar-items class="hidden-sm-and-down">
-
-    </v-toolbar-items>
-  </v-toolbar>
+      <v-toolbar-items class="hidden-sm-and-down"></v-toolbar-items>
+    </v-toolbar>
 
     <v-content>
       <v-container class="container" grid-list-xl>
@@ -27,7 +16,7 @@
             'title': $vuetify.breakpoint.xs,
             }"
           class="py-2"
-        >Your portfolio beteween {{ arrayOflast13QuoteDatesFormatted[range[0]] }} and {{ arrayOflast13QuoteDatesFormatted[range[1]] }}</h1>
+        >Your portfolio beteween {{ listOfDates.formatYYYY[range[0]] }} and {{ listOfDates.formatYYYY[range[1]] }}</h1>
         <v-layout
           justify-space-between
           fill-height
@@ -39,8 +28,7 @@
           <v-flex md4>
             <v-card class="pa-2">
               <v-card-text>
-                <v-layout
-                  row>
+                <v-layout row>
                   <v-flex>
                     <figure>
                       <figcaption class="body-2 text-uppercase">Portfolio Profit</figcaption>
@@ -64,7 +52,7 @@
                       <template v-for="stock in portfolio.stocksOfPortfolio">
                         <v-list class="body-2 my-2" dense>
                           <v-layout justify-space-between row>
-                            <v-flex md6>{{ stock.name }} ({{stock.symbol }})</v-flex>
+                            <v-flex md6>{{ stock.name }} ({{stock.amount}} units)</v-flex>
                             <v-flex
                               md6
                               :class="{greenText:(getProfitForStockX(stock.symbol)>0), redText:(getProfitForStockX(stock.symbol)<0)}"
@@ -97,54 +85,64 @@
           </v-flex>
           <v-flex md8>
             <v-card class="pa-2">
-<v-card-text>
-              <figure>
-                      <figcaption class="body-2 text-uppercase">Total value of your portfolio through time</figcaption>
-                      <compo-chart :data="dataTableForChart"></compo-chart>
-                    </figure>
-</v-card-text>
+              <v-card-text>
+                <figure>
+                  <figcaption
+                    class="body-2 text-uppercase"
+                  >Total value of your portfolio through time</figcaption>
+                  <compo-chart :data="dataTableForChart"></compo-chart>
+                </figure>
+              </v-card-text>
             </v-card>
           </v-flex>
         </v-layout>
-        <v-layout v-if="$vuetify.breakpoint.mdAndUp">
-
-
+        <v-layout v-if="!isSmallScreen">
           <v-flex class="slider">
             <v-range-slider
-              :tick-labels="arrayOflast13QuoteDatesFormatted"
+              :tick-labels="listOfDates.formatYY"
               always-dirty
               min="0"
-              max="12"
+              max="10"
               thumb-label
               thumb-size="64"
               ticks="always"
               tick-size="2"
-              v-model="range"
+              v-model="rangeDefinedByUser.desktopVersion.sliderValues"
             >
               <template v-slot:thumb-label="props">
-                <span>{{ arrayOflast13QuoteDatesFormatted[props.value] }}</span>
+                <span>{{ listOfDates.formatYY[props.value] }}</span>
               </template>
             </v-range-slider>
           </v-flex>
-
         </v-layout>
-        <h4>mp 0 {{monthPicked0}}</h4><br>
-<h4>mp 1 {{monthPicked1}}</h4><br>
-<h4>dt0 {{dateT0}}</h4><br>
-<h4>dt1 {{dateT1}}</h4>
-   <v-layout row wrap v-if="!$vuetify.breakpoint.mdAndUp">
 
+        <v-layout row wrap v-if="isSmallScreen">
+          <v-flex xs6 sm6>
+            Between 
+            <v-select
+              v-model="rangeDefinedByUser.mobileVersion.yearPicked0"
+              :items="listOfDates.formatYYYY"
+              menu-props="auto"
+              label="Select year"
+              hide-details
+              prepend-icon="mdi-calendar"
+              
+            ></v-select>
+          </v-flex>
+          <v-flex xs6 sm6>
+            and 
+            <v-select
+              v-model="rangeDefinedByUser.mobileVersion.yearPicked1"
+              :items="listOfDates.formatYYYY"
+              menu-props="auto"
+              label="Select year"
+              hide-details
+              prepend-icon="mdi-calendar"
 
-
-    <v-flex xs12 sm6>
-      <v-date-picker v-model="monthPicked0" color="primary" type="month" :allowed-dates="dateIsAllowedInDatePicker"></v-date-picker>
-    </v-flex>
-    <v-flex xs12 sm6 class="hidden-xs-only">
-      <v-date-picker v-model="monthPicked1" color="primary" type="month" :allowed-dates="dateIsAllowedInDatePicker"></v-date-picker>
-    </v-flex>
-  </v-layout>
-
-
+            ></v-select>
+          </v-flex>
+          
+        </v-layout>
       </v-container>
     </v-content>
   </v-app>
@@ -164,34 +162,44 @@ export default {
   },
   data() {
     return {
-      range: [0, 12],
-      forceReloadComponent: 1,
-      monthPicked0:'2018-05',
-      monthPicked1:'2019-05',
-
+      rangeDefinedByUser: {
+        mobileVersion: {
+          yearPicked0: -1,
+          yearPicked1: -1
+        },
+        desktopVersion: {
+          sliderValues: [0, 10] 
+        }
+      }
     };
   },
   computed: {
+    isSmallScreen() {
+      return !this.$vuetify.breakpoint.mdAndUp;
+    },
     portfolio() {
       return new Portfolio(stocksData);
     },
-    dateT0() {
-      if(this.$vuetify.breakpoint.mdAndUp) return this.arrayOflast13QuoteDates[this.range[0]]
-      else {
-        let formattedArray = this.arrayOflast13QuoteDates.map(el => el.substring(0,7))
-        let indexInArray = formattedArray.indexOf(this.monthPicked0)
-        return this.arrayOflast13QuoteDates[indexInArray]
+    range() {
+      if (this.isSmallScreen) {
+        let index0 = this.listOfDates.formatYYYY.indexOf(this.rangeDefinedByUser.mobileVersion.yearPicked0)
+        let index1 = this.listOfDates.formatYYYY.indexOf(this.rangeDefinedByUser.mobileVersion.yearPicked1)
+
+        if(index0!=-1 && index1!=-1) return [index0,index1]
+        else return [0,10]
+      } else {
+        return this.rangeDefinedByUser.desktopVersion.sliderValues;
       }
+    },
+    dateT0() {
+      return this.listOfDates.formatYYYYMMDD[this.range[0]];
     },
     dateT1() {
-      if(this.$vuetify.breakpoint.mdAndUp) return this.arrayOflast13QuoteDates[this.range[1]]
-      else {
-        let formattedArray = this.arrayOflast13QuoteDates.map(el => el.substring(0,7))
-        let indexInArray = formattedArray.indexOf(this.monthPicked1)
-        return this.arrayOflast13QuoteDates[indexInArray]
-      }
+      return this.listOfDates.formatYYYYMMDD[this.range[1]];
     },
     profit() {
+      console.log("dateT0" + this.dateT0);
+      console.log("dateT1" + this.dateT1);
       return this.portfolio.getProfitBetween(this.dateT0, this.dateT1);
     },
     annualizedReturn() {
@@ -200,17 +208,10 @@ export default {
         this.dateT1
       );
     },
-    currentValueOfPortfolio() {
-      return this.portfolio.getValueOfPortfolioAt(
-        this.arrayOflast13QuoteDates[12]
-      );
+    listOfDates() {
+      return this.portfolio.getListOfDates();
     },
-    arrayOflast13QuoteDates() {
-      return this.portfolio.getArrayOfLast13QuoteDates();
-    },
-    arrayOflast13QuoteDatesFormatted() {
-      return this.portfolio.getArrayOfLast13QuoteDatesFormatted();
-    },
+
     dataTableForChart() {
       return this.portfolio.getDataTableForChart(this.range[0], this.range[1]);
     }
@@ -223,15 +224,9 @@ export default {
         stockSymbol
       );
     },
-    dateIsAllowedInDatePicker(date) {
-      let formattedArray = this.arrayOflast13QuoteDates.map(el => el.substring(0,7))
-      return formattedArray.indexOf(date) != -1
-      console.log(arrayOfMonths)
-    }
   }
 };
 </script>
-
 
 <style>
 .slider * {
@@ -261,5 +256,5 @@ export default {
 }
 .textRight {
   text-align: right;
-} 
+}
 </style>
