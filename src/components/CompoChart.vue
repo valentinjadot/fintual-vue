@@ -15,8 +15,11 @@
 import { GChart } from 'vue-google-charts'
 
 export default {
+  // The data of the chart are send as a prop to this component and transmit to the Google Chart component
   props: ['data'],
   data: () => ({
+
+    // Here we have all the options for the Google Chart
     chartOptions: {
       isStacked: true,
       hAxis: {

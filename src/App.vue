@@ -1,5 +1,11 @@
 <template>
   <v-app>
+
+<!--
+    ************************
+    Header of the page
+    ************************ 
+-->
     <v-toolbar class="elevation-0 primary" dark>
       <v-toolbar-side-icon></v-toolbar-side-icon>
       <v-toolbar-title>Fintual Challenge</v-toolbar-title>
@@ -7,6 +13,11 @@
       <v-toolbar-items class="hidden-sm-and-down"></v-toolbar-items>
     </v-toolbar>
 
+<!--
+    ************************
+    Main content
+    ************************ 
+-->
     <v-content>
       <v-container class="container" grid-list-xl>
         <h1
@@ -26,6 +37,12 @@
         }"
         >
           <v-flex md4>
+
+<!--
+    *********************************
+    First card containing the figures
+    *********************************
+-->
             <v-card class="pa-2">
               <v-card-text>
                 <v-layout row>
@@ -55,20 +72,20 @@
                             <v-flex md6>{{ stock.name }} ({{stock.amount}} units)</v-flex>
                             <v-flex
                               md6
-                              :class="{greenText:(getProfitForStockX(stock.symbol)>0), redText:(getProfitForStockX(stock.symbol)<0)}"
+                              :class="{greenText:(stock.getShareholdingProfitBetween(dateT0,dateT1)>0), redText:(stock.getShareholdingProfitBetween(dateT0,dateT1)<0)}"
                               class="textRight"
                             >
                               <v-icon
                                 small
                                 color="#d23f31"
-                                v-if="(getProfitForStockX(stock.symbol)<0)"
+                                v-if="(stock.getShareholdingProfitBetween(dateT0,dateT1)<0)"
                               >mdi-arrow-down</v-icon>
                               <v-icon
                                 small
                                 color="#0f9d58"
-                                v-if="(getProfitForStockX(stock.symbol)>0)"
+                                v-if="(stock.getShareholdingProfitBetween(dateT0,dateT1)>0)"
                               >mdi-arrow-up</v-icon>
-                              $ {{getProfitForStockX(stock.symbol).toFixed()}}
+                              $ {{stock.getShareholdingProfitBetween(dateT0,dateT1).toFixed()}}
                               <span
                                 class="currency"
                               >USD</span>
@@ -85,6 +102,11 @@
           </v-flex>
           <v-flex md8>
             <v-card class="pa-2">
+<!--
+    *********************************
+    Second card containing the graph
+    *********************************
+-->
               <v-card-text>
                 <figure>
                   <figcaption
@@ -96,10 +118,23 @@
             </v-card>
           </v-flex>
         </v-layout>
+
+
+<!--
+    ******************************************************************
+    Tools used by user to define the range (depending on screen size)
+    ******************************************************************
+-->
+
         <v-layout v-if="!isSmallScreen">
+<!--
+    *********
+    Slider
+    *********
+-->
           <v-flex class="slider">
             <v-range-slider
-              :tick-labels="listOfDates.formatYY"
+              :tick-labels="listOfDates.formatYYYY"
               always-dirty
               min="0"
               max="10"
@@ -110,15 +145,20 @@
               v-model="rangeDefinedByUser.desktopVersion.sliderValues"
             >
               <template v-slot:thumb-label="props">
-                <span>{{ listOfDates.formatYY[props.value] }}</span>
+                <span>{{ listOfDates.formatYYYY[props.value] }}</span>
               </template>
             </v-range-slider>
           </v-flex>
         </v-layout>
 
         <v-layout row wrap v-if="isSmallScreen">
+<!--
+    *********
+    Dropdown selecter
+    *********
+-->
           <v-flex xs6 sm6>
-            Between 
+            Between
             <v-select
               v-model="rangeDefinedByUser.mobileVersion.yearPicked0"
               :items="listOfDates.formatYYYY"
@@ -126,34 +166,37 @@
               label="Select year"
               hide-details
               prepend-icon="mdi-calendar"
-              
             ></v-select>
           </v-flex>
           <v-flex xs6 sm6>
-            and 
+            and
             <v-select
               v-model="rangeDefinedByUser.mobileVersion.yearPicked1"
-              :items="listOfDates.formatYYYY"
+              :items="listOfDates.formatYYYY.filter(date => date>rangeDefinedByUser.mobileVersion.yearPicked0)"
               menu-props="auto"
               label="Select year"
               hide-details
               prepend-icon="mdi-calendar"
-
             ></v-select>
           </v-flex>
-          
         </v-layout>
       </v-container>
     </v-content>
   </v-app>
 </template>
 
+
+
+
+
 <script>
 import CompoChart from "./components/CompoChart";
 
+// We import the two classes Portfolio and Stock
 import { Portfolio, Stock } from "./simple-class";
-import stocksData from "./data/stocks.json";
-import { format } from "path";
+
+// We import the JSON containing the data from API
+import stocksDataFromAPI from "./data/stocks.json";
 
 export default {
   name: "app",
@@ -162,44 +205,57 @@ export default {
   },
   data() {
     return {
+      // Depending on the size of the screen, we use two diffenret tools (slide or dropdown selecter) to get the range of time
       rangeDefinedByUser: {
         mobileVersion: {
           yearPicked0: -1,
           yearPicked1: -1
         },
         desktopVersion: {
-          sliderValues: [0, 10] 
+          sliderValues: [0, 10]
         }
       }
     };
   },
   computed: {
     isSmallScreen() {
+      // Vuetify (UI framework) provides breakpoint that we use to switch from the slide to the dropdown selecter
       return !this.$vuetify.breakpoint.mdAndUp;
     },
     portfolio() {
-      return new Portfolio(stocksData);
+      // We create a new instance of portfolio using the data from the JSON
+      return new Portfolio(stocksDataFromAPI);
+    },
+    listOfDates() {
+      // We get the list of dates for the last 10 years
+      return this.portfolio.getListOfDates();
     },
     range() {
+      // The range of dates is computed diffrently depending on the tool used to define it (slide for large screen or dropdown selecter for small screens)
       if (this.isSmallScreen) {
-        let index0 = this.listOfDates.formatYYYY.indexOf(this.rangeDefinedByUser.mobileVersion.yearPicked0)
-        let index1 = this.listOfDates.formatYYYY.indexOf(this.rangeDefinedByUser.mobileVersion.yearPicked1)
+        let index0 = this.listOfDates.formatYYYY.indexOf(
+          this.rangeDefinedByUser.mobileVersion.yearPicked0
+        );
+        let index1 = this.listOfDates.formatYYYY.indexOf(
+          this.rangeDefinedByUser.mobileVersion.yearPicked1
+        );
 
-        if(index0!=-1 && index1!=-1) return [index0,index1]
-        else return [0,10]
+        // Value by default if the user has not picked dates yet
+        if (index0 != -1 && index1 != -1) return [index0, index1];
+        else return [0, 10];
       } else {
+        // If we are on a big screen, the range is defined by the range of the slider
         return this.rangeDefinedByUser.desktopVersion.sliderValues;
       }
     },
     dateT0() {
+      // Using the range defined by the user, we get the dates to use for computation of profit, annualized return, etc.
       return this.listOfDates.formatYYYYMMDD[this.range[0]];
     },
     dateT1() {
       return this.listOfDates.formatYYYYMMDD[this.range[1]];
     },
     profit() {
-      console.log("dateT0" + this.dateT0);
-      console.log("dateT1" + this.dateT1);
       return this.portfolio.getProfitBetween(this.dateT0, this.dateT1);
     },
     annualizedReturn() {
@@ -208,22 +264,10 @@ export default {
         this.dateT1
       );
     },
-    listOfDates() {
-      return this.portfolio.getListOfDates();
-    },
-
     dataTableForChart() {
-      return this.portfolio.getDataTableForChart(this.range[0], this.range[1]);
+      // We get the data for the chart that will be send to the CompoChart component
+      return this.portfolio.getDataTableForChart(this.dateT0, this.dateT1);
     }
-  },
-  methods: {
-    getProfitForStockX(stockSymbol) {
-      return this.portfolio.getProfitForStockX(
-        this.dateT0,
-        this.dateT1,
-        stockSymbol
-      );
-    },
   }
 };
 </script>
