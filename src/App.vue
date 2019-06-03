@@ -64,9 +64,9 @@
                     <figure>
                       <figcaption class="body-2 text-uppercase">Profit by stock</figcaption>
 
-                      <template v-for="stock in portfolio.stocksOfPortfolio">
-                        <v-list class="body-2 my-2" dense>
-                          <v-layout justify-space-between row>
+                      <v-list class="body-2 my-2" dense>
+                        <template v-for="stock in portfolio.stocksOfPortfolio">
+                          <v-layout v-bind:key="stock.name" justify-space-between row>
                             <v-flex md6>{{ stock.name }} ({{stock.amount}} units)</v-flex>
                             <v-flex
                               md6
@@ -89,9 +89,9 @@
                               >USD</span>
                             </v-flex>
                           </v-layout>
-                        </v-list>
-                        <v-divider class="divider"></v-divider>
-                      </template>
+                          <v-divider class="divider" v-bind:key="stock.name"></v-divider>
+                        </template>
+                      </v-list>
                     </figure>
                   </v-flex>
                 </v-layout>
@@ -187,7 +187,7 @@
 import CompoChart from './components/CompoChart'
 
 // We import the two classes Portfolio and Stock
-import { Portfolio, Stock } from './stock-and-portfolio-classes'
+import { Portfolio } from './stock-and-portfolio-classes'
 
 // We import the JSON containing the data from API
 import stocksDataFromAPI from './data/stocks.json'
@@ -209,7 +209,7 @@ export default {
           sliderValues: [0, 10]
         },
         sliderValidationRule: [
-          v => v[0] != v[1] || 'Please select two different years'
+          v => v[0] !== v[1] || 'Please select two different years'
         ]
       }
     }
@@ -238,7 +238,7 @@ export default {
         )
 
         // Value by default if the user has not picked dates yet
-        if (index0 != -1 && index1 != -1) return [index0, index1]
+        if (index0 !== -1 && index1 !== -1) return [index0, index1]
         else return [0, 10]
       } else {
         // If we are on a big screen, the range is defined by the range of the slider
