@@ -1,11 +1,10 @@
 <template>
   <v-app>
-
-<!--
+    <!--
     ************************
-    Header of the page
-    ************************ 
--->
+    Header of the page (could be a separate component as the app grows )
+    ************************
+    -->
     <v-toolbar class="elevation-0 primary" dark>
       <v-toolbar-side-icon></v-toolbar-side-icon>
       <v-toolbar-title>Fintual Challenge</v-toolbar-title>
@@ -13,11 +12,11 @@
       <v-toolbar-items class="hidden-sm-and-down"></v-toolbar-items>
     </v-toolbar>
 
-<!--
+    <!--
     ************************
     Main content
-    ************************ 
--->
+    ************************
+    -->
     <v-content>
       <v-container class="container" grid-list-xl>
         <h1
@@ -37,26 +36,25 @@
         }"
         >
           <v-flex md4>
-
-<!--
+            <!--
     *********************************
-    First card containing the figures
+    First card containing the stats & figures
     *********************************
--->
+            -->
             <v-card class="pa-2">
               <v-card-text>
                 <v-layout row>
                   <v-flex>
                     <figure>
                       <figcaption class="body-2 text-uppercase">Portfolio Profit</figcaption>
-                      <p class="display-1 my-1">$ {{ profit.toFixed() }}</p>
+                      <p class="display-1 my-1">${{ profit }}</p>
                     </figure>
                   </v-flex>
 
                   <v-flex>
                     <figure>
                       <figcaption class="body-2 text-uppercase">Annualized return</figcaption>
-                      <p class="display-1 my-1">{{ (annualizedReturn*100).toFixed() }} %</p>
+                      <p class="display-1 my-1">{{ annualizedReturn }} %</p>
                     </figure>
                   </v-flex>
                 </v-layout>
@@ -102,11 +100,11 @@
           </v-flex>
           <v-flex md8>
             <v-card class="pa-2">
-<!--
+              <!--
     *********************************
     Second card containing the graph
     *********************************
--->
+              -->
               <v-card-text>
                 <figure>
                   <figcaption
@@ -119,19 +117,18 @@
           </v-flex>
         </v-layout>
 
-
-<!--
+        <!--
     ******************************************************************
     Tools used by user to define the range (depending on screen size)
     ******************************************************************
--->
+        -->
 
         <v-layout v-if="!isSmallScreen">
-<!--
+          <!--
     *********
-    Slider
+    Slider (big screens)
     *********
--->
+          -->
           <v-flex class="slider">
             <v-range-slider
               :tick-labels="listOfDates.formatYYYY"
@@ -143,6 +140,7 @@
               ticks="always"
               tick-size="2"
               v-model="rangeDefinedByUser.desktopVersion.sliderValues"
+              :rules="rangeDefinedByUser.sliderValidationRule"
             >
               <template v-slot:thumb-label="props">
                 <span>{{ listOfDates.formatYYYY[props.value] }}</span>
@@ -152,11 +150,11 @@
         </v-layout>
 
         <v-layout row wrap v-if="isSmallScreen">
-<!--
+          <!--
     *********
-    Dropdown selecter
+    Dropdown selector (small screen)
     *********
--->
+          -->
           <v-flex xs6 sm6>
             Between
             <v-select
@@ -185,27 +183,23 @@
   </v-app>
 </template>
 
-
-
-
-
 <script>
-import CompoChart from "./components/CompoChart";
+import CompoChart from './components/CompoChart'
 
 // We import the two classes Portfolio and Stock
-import { Portfolio, Stock } from "./simple-class";
+import { Portfolio, Stock } from './stock-and-portfolio-classes'
 
 // We import the JSON containing the data from API
-import stocksDataFromAPI from "./data/stocks.json";
+import stocksDataFromAPI from './data/stocks.json'
 
 export default {
-  name: "app",
+  name: 'app',
   components: {
     CompoChart
   },
-  data() {
+  data () {
     return {
-      // Depending on the size of the screen, we use two diffenret tools (slide or dropdown selecter) to get the range of time
+      // Depending on the size of the screen, we use two diffenret tools (slide or dropdown selector) to get the range of time
       rangeDefinedByUser: {
         mobileVersion: {
           yearPicked0: -1,
@@ -213,63 +207,66 @@ export default {
         },
         desktopVersion: {
           sliderValues: [0, 10]
-        }
+        },
+        sliderValidationRule: [
+          v => v[0] != v[1] || 'Please select two different years'
+        ]
       }
-    };
+    }
   },
   computed: {
-    isSmallScreen() {
-      // Vuetify (UI framework) provides breakpoint that we use to switch from the slide to the dropdown selecter
-      return !this.$vuetify.breakpoint.mdAndUp;
+    isSmallScreen () {
+      // Vuetify (UI framework) provides breakpoint that we use to switch from the slide to the dropdown selector
+      return !this.$vuetify.breakpoint.mdAndUp
     },
-    portfolio() {
+    portfolio () {
       // We create a new instance of portfolio using the data from the JSON
-      return new Portfolio(stocksDataFromAPI);
+      return new Portfolio(stocksDataFromAPI)
     },
-    listOfDates() {
+    listOfDates () {
       // We get the list of dates for the last 10 years
-      return this.portfolio.getListOfDates();
+      return this.portfolio.getListOfDates()
     },
-    range() {
-      // The range of dates is computed diffrently depending on the tool used to define it (slide for large screen or dropdown selecter for small screens)
+    range () {
+      // The range of dates is computed diffrently depending on the tool used to define it (slide for large screen or dropdown selector for small screens)
       if (this.isSmallScreen) {
         let index0 = this.listOfDates.formatYYYY.indexOf(
           this.rangeDefinedByUser.mobileVersion.yearPicked0
-        );
+        )
         let index1 = this.listOfDates.formatYYYY.indexOf(
           this.rangeDefinedByUser.mobileVersion.yearPicked1
-        );
+        )
 
         // Value by default if the user has not picked dates yet
-        if (index0 != -1 && index1 != -1) return [index0, index1];
-        else return [0, 10];
+        if (index0 != -1 && index1 != -1) return [index0, index1]
+        else return [0, 10]
       } else {
         // If we are on a big screen, the range is defined by the range of the slider
-        return this.rangeDefinedByUser.desktopVersion.sliderValues;
+        return this.rangeDefinedByUser.desktopVersion.sliderValues
       }
     },
-    dateT0() {
+    dateT0 () {
       // Using the range defined by the user, we get the dates to use for computation of profit, annualized return, etc.
-      return this.listOfDates.formatYYYYMMDD[this.range[0]];
+      return this.listOfDates.formatYYYYMMDD[this.range[0]]
     },
-    dateT1() {
-      return this.listOfDates.formatYYYYMMDD[this.range[1]];
+    dateT1 () {
+      return this.listOfDates.formatYYYYMMDD[this.range[1]]
     },
-    profit() {
-      return this.portfolio.getProfitBetween(this.dateT0, this.dateT1);
+    profit () {
+      return this.portfolio.getProfitBetween(this.dateT0, this.dateT1)
     },
-    annualizedReturn() {
+    annualizedReturn () {
       return this.portfolio.getAnnualizedReturnBetween(
         this.dateT0,
         this.dateT1
-      );
+      )
     },
-    dataTableForChart() {
+    dataTableForChart () {
       // We get the data for the chart that will be send to the CompoChart component
-      return this.portfolio.getDataTableForChart(this.dateT0, this.dateT1);
+      return this.portfolio.getDataTableForChart(this.dateT0, this.dateT1)
     }
   }
-};
+}
 </script>
 
 <style>

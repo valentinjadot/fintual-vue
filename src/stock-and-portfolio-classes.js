@@ -1,4 +1,3 @@
-
 // ********************************************************************
 //
 //  CLASS STOCK
@@ -29,21 +28,17 @@ export class Stock {
   }
   // Returns the profit made by holding these shares between these two dates
   getShareholdingProfitBetween (dateT0, dateT1) {
-    return this.getShareholdingValueAt(dateT1) - this.getShareholdingValueAt(dateT0)
+    return (
+      this.getShareholdingValueAt(dateT1) - this.getShareholdingValueAt(dateT0)
+    )
   }
 }
-
-
-
-
-
 
 // ********************************************************************
 //
 //  CLASS PORTFOLIO
 //
 // ********************************************************************
-
 
 export class Portfolio {
   // The class recieve as argument an array continaing all the data regarding the stocks in JSON (from an API for example).
@@ -69,10 +64,13 @@ export class Portfolio {
   // Returns the total value of the portfolio at a certain date
   getPortfolioValueAt (date) {
     // We loop through each stock and sum up the total value of that stock (price of the share * amount of shares)
-    return parseInt(this.stocksOfPortfolio
-      .map(stock => stock.getShareholdingValueAt(date))
-      .reduce((accumulator, shareholdingValue) => accumulator + shareholdingValue))
-    
+    return parseInt(
+      this.stocksOfPortfolio
+        .map(stock => stock.getShareholdingValueAt(date))
+        .reduce(
+          (accumulator, shareholdingValue) => accumulator + shareholdingValue
+        )
+    )
   }
 
   // Returns the total portfolio profit made between 2 dates
@@ -101,18 +99,18 @@ export class Portfolio {
 
     // The formula of annualized return is:
     // (1 + cumulativeReturn) ^ (365 / daysHeld) - 1
-    return (cumulativeReturn + 1) ** (365 / daysHeld) - 1
+    let annualizedReturn = (cumulativeReturn + 1) ** (365 / daysHeld) - 1
+    let annualizedReturnFormatted = (annualizedReturn * 100).toFixed()
+    return !isNaN(annualizedReturnFormatted) ? annualizedReturnFormatted : '-'
   }
-
 
   // ***********************************************************************************************
   //
   // These are two aditionnal methods used in order to visualize and play around with the portfolio
-  // 
+  //
   // ***********************************************************************************************
 
   getListOfDates () {
-
     // For this visualisation, we arbitraraly focus on the last 10 years
     const NUMBER_OF_YEARS = 10
 
@@ -125,7 +123,6 @@ export class Portfolio {
       formatYYYY: [],
       formatYY: []
     }
-
 
     // Ex: 2018-12-29
     objectToReturn.formatYYYYMMDD = this.listOfDates
@@ -149,7 +146,6 @@ export class Portfolio {
   }
 
   getDataTableForChart (dateT0, dateT1) {
-
     // We create a table (array of arrays) that will be sent to Google Chart API to generate the graph
     let tableForChart = []
 
@@ -167,23 +163,23 @@ export class Portfolio {
 
     // Each array inside "tableForChart" is therefore a line of a table.
 
-    // The first line is the header. It contains the labels of the data.
+    // FIRST LINE OF THE TABLE
+
+    // It contains the labels of the data.
     // The first collumn will be the list of dates (formatted as i.e. "May, 2019") thus the header is:
     let lineHeader = [{ type: 'string', role: 'domain', label: 'Months' }]
 
     // The remaining collumn headers will be the name of each Company's stock
     this.stocksOfPortfolio.forEach(stock => lineHeader.push(stock.name))
 
-    // We add a special collumn to configure the tooltip (that appears whe we hover the graph)
-
     // We add this first completed line to the table
     tableForChart.push(lineHeader)
 
+    // OTHER LINES OF THE TABLE
 
     let start = this.getListOfDates().formatYYYYMMDD.indexOf(dateT0)
     let end = this.getListOfDates().formatYYYYMMDD.indexOf(dateT1)
-    // For the remainng lines of the table, we will loop through each of the last 13 quote dates and add the corresponding stocks value
-    // VLC tu dis 13 alors qu'il y a 14 veleur, 12 mois, je suis perdu
+    // For the remaing lines of the table, we will loop through each of the last 13 quote dates and add the corresponding stocks value
     for (let i = start; i <= end; i++) {
       let dateOfQuote = this.getListOfDates().formatYY[i]
       // The first collumn of this line is the date itself
@@ -192,20 +188,15 @@ export class Portfolio {
       this.stocksOfPortfolio.forEach(stock => {
         line.push(
           parseInt(
-            stock.getShareholdingValueAt(this.getListOfDates().formatYYYYMMDD[i])
+            stock.getShareholdingValueAt(
+              this.getListOfDates().formatYYYYMMDD[i]
+            )
           )
         )
       })
-
       // We insert the line in the final data table
       tableForChart.push(line)
     }
-
     return tableForChart
   }
 }
-
-
-
-
-
