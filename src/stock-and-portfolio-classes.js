@@ -18,9 +18,9 @@ export class Stock {
     return this.amount
   }
 
-  // Returns the price of the stock at a given date. As the data from API contain different price-related values, we arbitraraly chose the price at the closing of the market which is stored under the key "4. close".
+  // Returns the price of the stock at a given date. As the data from API contain different price-related values, we chose the adjusted closing price factors in corporate actions such as stock splits, dividends / distributions and rights offerings
   getPriceAt (date) {
-    return this.monthlyTimeSerie[date]['4. close']
+    return this.monthlyTimeSerie[date]['5. adjusted close']
   }
   // Returns the shareholing value owned (price of the share times the amount of shares owned)
   getShareholdingValueAt (date) {
